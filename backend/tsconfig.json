@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",                // Output modern JavaScript
+    "module": "commonjs",
+    "outDir": "dist",                 // Compiled JS goes here
+    "rootDir": "src",                 // Source code lives here
+    "strict": true,                   // Enables all strict type checks
+    "esModuleInterop": true,          // ✅ Allows import express from 'express' to work
+    "skipLibCheck": true,            // Speeds up build, skips type checks on .d.ts files
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true        // Lets you import JSON files directly
+  },
+  "include": ["src"]
+}
