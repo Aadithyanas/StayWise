@@ -50,7 +50,7 @@ export const api = {
       { method: 'POST', body: { email, password } }
     ),
 
-  // 🏡 Local Properties (your own backend)
+
   getProperty: (id: string) => apiFetch<{ property: any }>(`/properties/${id}`),
   getLocalProperties: () => apiFetch<{ properties: any[] }>(`/properties/all`),
   createProperty: (input: { title: string; description: string; location: string; pricePerNight: number; images?: string[] }) =>
