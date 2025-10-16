@@ -8,7 +8,6 @@ import { convertUsdPriceStringToINRDisplay } from '../../lib/currency';
 import { BookingModal } from '../../components/BookingModal';
 import { useAuth } from '../../lib/auth';
 import { useRouter } from 'next/navigation';
-import { gsap } from 'gsap';
 
 function formatDate(input: Date): string {
   return input.toISOString().split('T')[0];
@@ -137,8 +136,8 @@ export default function PropertiesPage() {
   };
 
   const isLoading = externalQuery.isLoading || localQuery.isLoading;
-  if (isLoading) return <main className="p-6">Loading properties...</main>;
-  if (externalQuery.error) return <main className="p-6">Error: {(externalQuery.error as Error).message}</main>;
+  const hasError = Boolean(externalQuery.error);
+  const errorMessage = hasError ? (externalQuery.error as Error).message : '';
 
   // Prepare combined results
   const localAll = (localQuery.data?.properties ?? []) as any[];
@@ -168,21 +167,29 @@ export default function PropertiesPage() {
   const hotels = [...localAsHotels, ...external];
 
   // Animate cards when data changes
+  // Wrap in dynamic import so gsap only loads client-side to avoid SSR errors
   useEffect(() => {
     if (!listRef.current) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        '.hotel-card',
-        { y: 16, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out', overwrite: true }
-      );
-    }, listRef);
-    return () => ctx.revert();
+    let ctx: any;
+    import('gsap').then(({ gsap }) => {
+      ctx = (gsap as any).context(() => {
+        (gsap as any).fromTo(
+          '.hotel-card',
+          { y: 16, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out', overwrite: true }
+        );
+      }, listRef);
+    });
+    return () => ctx && ctx.revert && ctx.revert();
   }, [hotels.length]);
 
   return (
     <main className="w-full max-w-none px-6 py-6">
       <h1 className="mb-6 text-3xl font-extrabold tracking-tight">Search Hotels</h1>
+
+      {hasError && (
+        <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">Error: {errorMessage}</div>
+      )}
       
       {/* Search Form */}
       <form onSubmit={handleSearch} className="mb-8 rounded-xl border bg-white p-6 shadow-md">
@@ -246,7 +253,7 @@ export default function PropertiesPage() {
       <h2 className="mb-4 text-xl font-semibold">
         {hotels.length} Hotels Found
       </h2>
-      <div ref={listRef} className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div ref={listRef} className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {hotels.map((hotel: any, idx: number) => (
           <div key={hotel.property_token || idx} className="hotel-card rounded-xl border bg-white p-4 shadow-sm transition-all hover:shadow-md">
             {hotel.images && hotel.images[0] && (

@@ -17,19 +17,19 @@ export default function PropertyDetailsPage() {
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  if (isLoading || !data) return <main className="p-6">Loading…</main>;
-  const p = data.property;
+  const p = data?.property;
   console.log('🔎 Property:', p);
-  console.log('🔎 Property ID:', p.id);
-  console.log('🔎 Property Title:', p.title);
-  console.log('🔎 Property Image URL:', p.imageUrl);
-  console.log('🔎 Property Price Per Night:', p.pricePerNight);
-  console.log('🔎 Property Location:', p.location);
-  console.log('🔎 Property Description:', p.description);
-  console.log('🔎 Property Owner ID:', p.ownerId);
+  console.log('🔎 Property ID:', p?.id);
+  console.log('🔎 Property Title:', p?.title);
+  console.log('🔎 Property Image URL:', p?.imageUrl);
+  console.log('🔎 Property Price Per Night:', p?.pricePerNight);
+  console.log('🔎 Property Location:', p?.location);
+  console.log('🔎 Property Description:', p?.description);
+  console.log('🔎 Property Owner ID:', p?.ownerId);
 
   const createBooking = useMutation({
     mutationFn: () => {
+      if (!p) throw new Error('Property not loaded');
       // Always create external booking and let backend determine ownerId from property
       return api.createExternalBooking({
         provider: 'google',
@@ -39,7 +39,7 @@ export default function PropertyDetailsPage() {
         propertyId: p.id, // Always send propertyId so backend can fetch ownerId
         startDate,
         endDate,
-        totalPrice: Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) * p.pricePerNight,
+        totalPrice: Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) * (p.pricePerNight || 0),
       });
     },
     onSuccess: async () => {
@@ -49,6 +49,8 @@ export default function PropertyDetailsPage() {
     },
     onError: (e: any) => setError(e.message || 'Failed to create booking'),
   });
+
+  if (isLoading || !p) return <main className="p-6">Loading…</main>;
 
   return (
     <main className="mx-auto max-w-2xl p-6">

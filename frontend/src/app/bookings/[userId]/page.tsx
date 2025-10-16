@@ -137,9 +137,14 @@ export default function UserBookingsPage() {
       </div>
 
       <div className="space-y-3">
-        {currentBookings.map((b: any) => (
+              {currentBookings.map((b: any) => (
           <div key={b._id} className="rounded border p-4">
-            <div className="font-medium">{b.hotelName || b.name || b.property?.title}</div>
+            <div className="flex items-start gap-3">
+              {b.imageUrl && (
+                <img src={b.imageUrl} alt={b.hotelName || b.name || 'booking'} className="h-16 w-24 rounded object-cover" />
+              )}
+              <div className="font-medium">{b.hotelName || b.name || b.property?.title}</div>
+            </div>
             <div className="text-sm text-gray-600">{new Date(b.startDate).toLocaleDateString()} → {new Date(b.endDate).toLocaleDateString()}</div>
             <div className="mt-1 font-semibold">Total: ${b.totalPrice}</div>
             {b.status === 'cancelled' ? (
@@ -164,7 +169,12 @@ export default function UserBookingsPage() {
         ))}
         {currentExternal.map((b: any) => (
           <div key={b._id} className="rounded border p-4">
-            <div className="font-medium">{b.hotelName || b.name} <span className="ml-2 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{b.provider}</span></div>
+            <div className="flex items-start gap-3">
+              {b.imageUrl && (
+                <img src={b.imageUrl} alt={b.hotelName || b.name} className="h-16 w-24 rounded object-cover" />
+              )}
+              <div className="font-medium">{b.hotelName || b.name} <span className="ml-2 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{b.provider}</span></div>
+            </div>
             <div className="text-sm text-gray-600">{new Date(b.startDate).toLocaleDateString()} → {new Date(b.endDate).toLocaleDateString()}</div>
             <div className="mt-1 font-semibold">Total: ${b.totalPrice}</div>
             {b.status === 'cancelled' ? (
