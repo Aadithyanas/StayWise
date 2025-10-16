@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5003/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://staywise-s1fj.onrender.com/api';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 

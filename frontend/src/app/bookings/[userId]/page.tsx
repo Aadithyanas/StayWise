@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../../lib/api';
+import { usdToInr, formatINR } from '../../../lib/currency';
 import { useAuth } from '../../../lib/auth';
 import { useState } from 'react';
 
@@ -146,7 +147,7 @@ export default function UserBookingsPage() {
               <div className="font-medium">{b.hotelName || b.name || b.property?.title}</div>
             </div>
             <div className="text-sm text-gray-600">{new Date(b.startDate).toLocaleDateString()} → {new Date(b.endDate).toLocaleDateString()}</div>
-            <div className="mt-1 font-semibold">Total: ${b.totalPrice}</div>
+            <div className="mt-1 font-semibold">Total: {formatINR(usdToInr(b.totalPrice || 0))}</div>
             {b.status === 'cancelled' ? (
               <div className="mt-1 text-sm text-red-600">Cancelled</div>
             ) : (
@@ -176,7 +177,7 @@ export default function UserBookingsPage() {
               <div className="font-medium">{b.hotelName || b.name} <span className="ml-2 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{b.provider}</span></div>
             </div>
             <div className="text-sm text-gray-600">{new Date(b.startDate).toLocaleDateString()} → {new Date(b.endDate).toLocaleDateString()}</div>
-            <div className="mt-1 font-semibold">Total: ${b.totalPrice}</div>
+            <div className="mt-1 font-semibold">Total: {formatINR(usdToInr(b.totalPrice || 0))}</div>
             {b.status === 'cancelled' ? (
               <div className="mt-1 text-sm text-red-600">Cancelled</div>
             ) : (
