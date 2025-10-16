@@ -35,17 +35,17 @@ export async function apiFetch<T>(
 export const api = {
   // 🔐 Auth
   signup: (email: string, password: string) =>
-    apiFetch<{ token: string; user: { id: string; email: string; role: string } }>(
+    apiFetch<{ token: string; user: { id: string; email: string; role: 'user' | 'admin' } }>(
       '/auth/signup',
       { method: 'POST', body: { email, password } }
     ),
   login: (email: string, password: string) =>
-    apiFetch<{ token: string; user: { id: string; email: string; role: string } }>(
+    apiFetch<{ token: string; user: { id: string; email: string; role: 'user' | 'admin' } }>(
       '/auth/login',
       { method: 'POST', body: { email, password } }
     ),
   adminSignup: (email: string, password: string) =>
-    apiFetch<{ token: string; user: { id: string; email: string; role: string } }>(
+    apiFetch<{ token: string; user: { id: string; email: string; role: 'user' | 'admin' } }>(
       '/auth/admin/signup',
       { method: 'POST', body: { email, password } }
     ),
