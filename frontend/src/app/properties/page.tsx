@@ -1,13 +1,14 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { convertUsdPriceStringToINRDisplay } from '../../lib/currency';
 import { BookingModal } from '../../components/BookingModal';
 import { useAuth } from '../../lib/auth';
 import { useRouter } from 'next/navigation';
+import { gsap } from 'gsap';
 
 function formatDate(input: Date): string {
   return input.toISOString().split('T')[0];
@@ -16,6 +17,7 @@ function formatDate(input: Date): string {
 export default function PropertiesPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const listRef = useRef<HTMLDivElement | null>(null);
   // Dynamic defaults: today and +3 days
   const today = useMemo(() => new Date(), []);
   const plus3 = useMemo(() => {
@@ -61,7 +63,7 @@ export default function PropertiesPage() {
         queryKey: ['external-properties', qLocation, qCheckIn, qCheckOut, qAdults],
         queryFn: () => api.getProperties(qLocation, qCheckIn, qCheckOut, qAdults),
         enabled: !!qLocation && !!qCheckIn && !!qCheckOut,
-        placeholderData: (prev) => prev,
+        placeholderData: (prev: any) => prev,
       },
     ],
   });
@@ -143,10 +145,14 @@ export default function PropertiesPage() {
   const localFiltered = localAll.filter((p) =>
     !qLocation ? true : `${p.location}`.toLowerCase().includes(qLocation.toLowerCase())
   );
+  // If admin is logged in, show their local properties first; else show all local first
+  const localOrdered = user?.role === 'admin'
+    ? localFiltered.filter((p: any) => p.ownerId === user.id).concat(localFiltered.filter((p: any) => p.ownerId !== user.id))
+    : localFiltered;
   const external = (externalQuery.data?.properties ?? []) as any[];
 
   // Map local to external-like shape to reuse card UI
-  const localAsHotels = localFiltered.map((p) => ({
+  const localAsHotels = localOrdered.map((p) => ({
     __source: 'local',
     id: p._id,
     name: p.title,
@@ -161,12 +167,25 @@ export default function PropertiesPage() {
 
   const hotels = [...localAsHotels, ...external];
 
+  // Animate cards when data changes
+  useEffect(() => {
+    if (!listRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.hotel-card',
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.4, stagger: 0.06, ease: 'power2.out', overwrite: true }
+      );
+    }, listRef);
+    return () => ctx.revert();
+  }, [hotels.length]);
+
   return (
-    <main className="mx-auto max-w-6xl p-6">
-      <h1 className="mb-6 text-3xl font-bold">Search Hotels</h1>
+    <main className="w-full max-w-none px-6 py-6">
+      <h1 className="mb-6 text-3xl font-extrabold tracking-tight">Search Hotels</h1>
       
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="mb-8 rounded-lg border bg-white p-6 shadow-sm">
+      <form onSubmit={handleSearch} className="mb-8 rounded-xl border bg-white p-6 shadow-md">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div>
             <label className="mb-1 block text-sm font-medium">Location</label>
@@ -217,7 +236,7 @@ export default function PropertiesPage() {
         </div>
         <button
           type="submit"
-          className="mt-4 rounded bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700"
+          className="mt-4 rounded-lg bg-blue-600 px-6 py-2.5 font-semibold text-white shadow hover:bg-blue-700"
         >
           Search Hotels
         </button>
@@ -227,18 +246,18 @@ export default function PropertiesPage() {
       <h2 className="mb-4 text-xl font-semibold">
         {hotels.length} Hotels Found
       </h2>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div ref={listRef} className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {hotels.map((hotel: any, idx: number) => (
-          <div key={hotel.property_token || idx} className="rounded-lg border bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+          <div key={hotel.property_token || idx} className="hotel-card rounded-xl border bg-white p-4 shadow-sm transition-all hover:shadow-md">
             {hotel.images && hotel.images[0] && (
               <img
                 src={hotel.images[0].thumbnail}
                 alt={hotel.name}
-                className="mb-3 h-48 w-full rounded object-cover"
+                className="mb-3 h-48 w-full rounded-lg object-cover"
               />
             )}
             <div className="mb-2 flex items-start justify-between">
-              <h3 className="text-lg font-semibold flex-1">{hotel.name}</h3>
+              <h3 className="flex-1 text-lg font-semibold">{hotel.name}</h3>
               {hotel.overall_rating && (
                 <div className="ml-2 flex items-center gap-1 rounded bg-blue-600 px-2 py-1 text-sm text-white">
                   <span>★</span>
@@ -291,7 +310,7 @@ export default function PropertiesPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => handleBookNow(hotel)}
-                className="flex-1 rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
               >
                 Book Now
               </button>
@@ -300,7 +319,7 @@ export default function PropertiesPage() {
                   href={hotel.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Details
                 </a>

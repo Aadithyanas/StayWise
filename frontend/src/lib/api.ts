@@ -52,7 +52,7 @@ export const api = {
 
   // 🏡 Local Properties (your own backend)
   getProperty: (id: string) => apiFetch<{ property: any }>(`/properties/${id}`),
-  getLocalProperties: () => apiFetch<{ properties: any[] }>(`/properties`),
+  getLocalProperties: () => apiFetch<{ properties: any[] }>(`/properties/all`),
   createProperty: (input: { title: string; description: string; location: string; pricePerNight: number; images?: string[] }) =>
     apiFetch<{ property: any }>(`/properties`, { method: 'POST', body: input }),
 
@@ -61,6 +61,11 @@ export const api = {
     apiFetch<{ booking: any }>(`/bookings`, { method: 'POST', body: input }),
   getMyBookings: () => apiFetch<{ bookings: any[] }>('/bookings/mine'),
   getAllBookings: () => apiFetch<{ bookings: any[] }>('/bookings/all'),
+  getOwnerBookings: () => apiFetch<{ bookings: any[] }>('/bookings/owner'),
+  cancelBooking: (id: string) => apiFetch<{ booking: any }>(`/bookings/${id}/cancel`, { method: 'PATCH' }),
+  debugAdminBookings: () => apiFetch<any>('/bookings/debug/admin'),
+  debugAllBookings: () => apiFetch<any>('/bookings/debug/all'),
+  migrateBookings: () => apiFetch<any>('/bookings/migrate', { method: 'POST' }),
 
   // 📦 External bookings (Google Hotels)
   createExternalBooking: (input: {
@@ -68,11 +73,16 @@ export const api = {
     externalId: string;
     name: string;
     imageUrl?: string;
+    adminId?: string; // Add admin ID (optional for backward compatibility)
+    hotelName?: string; // Add hotel name (optional for backward compatibility)
+    propertyId?: string; // Add property ID (optional for backward compatibility)
     startDate: string;
     endDate: string;
     totalPrice: number;
   }) => apiFetch<{ booking: any }>(`/external-bookings`, { method: 'POST', body: input }),
   getMyExternalBookings: () => apiFetch<{ bookings: any[] }>(`/external-bookings/mine`),
+  getAdminExternalBookings: () => apiFetch<{ bookings: any[] }>(`/external-bookings/admin`),
+  cancelExternalBooking: (id: string) => apiFetch<{ booking: any }>(`/external-bookings/${id}/cancel`, { method: 'PATCH' }),
 
   // 🌍 External API: Google Hotels (via Express backend proxy)
   getProperties: async (location: string, checkIn: string, checkOut: string, adults = '2') => {

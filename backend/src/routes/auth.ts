@@ -21,7 +21,7 @@ router.post('/signup', async (req, res) => {
 
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await User.create({ email, passwordHash, role: 'user' });
-  const token = signJwt({ sub: user.id, role: user.role });
+  const token = signJwt({ sub: user.id, email: user.email, role: user.role });
   return res.status(201).json({ token, user: { id: user.id, email: user.email, role: user.role } });
 });
 
@@ -36,7 +36,7 @@ router.post('/login', async (req, res) => {
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const token = signJwt({ sub: user.id, role: user.role });
+  const token = signJwt({ sub: user.id, email: user.email, role: user.role });
   return res.json({ token, user: { id: user.id, email: user.email, role: user.role } });
 });
 
@@ -51,7 +51,7 @@ router.post('/admin/signup', async (req, res) => {
 
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await User.create({ email, passwordHash, role: 'admin' });
-  const token = signJwt({ sub: user.id, role: user.role });
+  const token = signJwt({ sub: user.id, email: user.email, role: user.role });
   return res.status(201).json({ token, user: { id: user.id, email: user.email, role: user.role } });
 });
 

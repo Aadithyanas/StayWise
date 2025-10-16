@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { BookingModal } from '../components/BookingModal';
 import { useAuth } from '../lib/auth';
 import { useRouter } from 'next/navigation';
+import { gsap } from 'gsap';
 
 export default function HomePage() {
   const { user } = useAuth();
   const router = useRouter();
   const [selectedHotel, setSelectedHotel] = useState<any>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const heroRef = useRef<HTMLDivElement | null>(null);
+  const ctaRef = useRef<HTMLDivElement | null>(null);
+  const featuresRef = useRef<HTMLDivElement | null>(null);
   
   // Default search parameters for featured hotels
   const { data, isLoading, error } = useQuery({
@@ -35,36 +39,59 @@ export default function HomePage() {
 
   const hotels = data?.properties?.slice(0, 6) || []; // Show only first 6 hotels
 
+  // GSAP entrance animations
+  useEffect(() => {
+    if (!heroRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from('.hero-title', { y: 30, autoAlpha: 0, duration: 0.8, ease: 'power3.out' });
+      gsap.from('.hero-sub', { y: 20, autoAlpha: 0, duration: 0.8, delay: 0.1, ease: 'power3.out' });
+      gsap.from('.hero-cta > *', { y: 12, autoAlpha: 0, duration: 0.6, stagger: 0.08, delay: 0.25, ease: 'power3.out' });
+      gsap.from('.hero-image', { scale: 1.1, autoAlpha: 0, duration: 1.2, ease: 'power3.out' });
+    }, heroRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="text-center">
-            <h1 className="mb-6 text-5xl font-bold">Welcome to StayWise</h1>
-            <p className="mb-8 text-xl text-blue-100">
-              Discover amazing hotels and book your perfect stay without any hassle
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <a
-                href="#featured-hotels"
-                className="rounded-lg bg-white px-8 py-3 text-lg font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
-              >
-                Explore Hotels
-              </a>
-              <a
-                href="/properties"
-                className="rounded-lg border-2 border-white px-8 py-3 text-lg font-semibold text-white hover:bg-white hover:text-blue-600 transition-colors"
-              >
-                Search Properties
-              </a>
-            </div>
+      <section ref={heroRef} className="relative min-h-[80vh] md:min-h-[90vh] overflow-hidden">
+        {/* Background media */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1600&auto=format&fit=crop"
+            alt="Resort by the sea"
+            className="hero-image h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center px-6 pt-24 pb-16 text-center text-white md:pt-32">
+          <h1 className="hero-title mb-4 text-4xl font-extrabold leading-tight md:text-6xl">
+            Welcome to StayWise
+          </h1>
+          <p className="hero-sub mb-8 max-w-2xl text-lg text-blue-100 md:text-xl">
+            Discover amazing hotels and book your perfect stay without any hassle
+          </p>
+          <div ref={ctaRef} className="hero-cta flex w-full max-w-xl flex-col gap-3 sm:flex-row sm:justify-center">
+            <a
+              href="#featured-hotels"
+              className="rounded-lg bg-white px-8 py-3 text-lg font-semibold text-blue-700 shadow hover:bg-blue-50 transition-colors"
+            >
+              Explore Hotels
+            </a>
+            <a
+              href="/properties"
+              className="rounded-lg border-2 border-white px-8 py-3 text-lg font-semibold text-white hover:bg-white hover:text-blue-700 transition-colors"
+            >
+              Search Properties
+            </a>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section ref={featuresRef} className="py-16 bg-white">
         <div className="mx-auto max-w-6xl px-6">
           <h2 className="mb-12 text-center text-3xl font-bold text-gray-900">
             Why Choose StayWise?
