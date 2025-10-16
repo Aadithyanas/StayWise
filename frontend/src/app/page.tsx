@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../lib/api';
+// Removed API fetching for demo content
 import { BookingModal } from '../components/BookingModal';
 import { useAuth } from '../lib/auth';
 import { useRouter } from 'next/navigation';
@@ -17,11 +16,33 @@ export default function HomePage() {
   const ctaRef = useRef<HTMLDivElement | null>(null);
   const featuresRef = useRef<HTMLDivElement | null>(null);
   
-  // Default search parameters for featured hotels
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['featured-hotels'],
-    queryFn: () => api.getProperties('New York', '2025-01-15', '2025-01-20', '2'),
-  });
+  // Static demo hotels (no API)
+  const hotels = [
+    {
+      name: 'Oceanview Retreat',
+      images: [{ thumbnail: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop' }],
+      description: 'Wake up to soothing waves and golden sunrises — a coastal escape designed for relaxation.',
+      hotel_class: 'Resort',
+      rate_per_night: { lowest: '₹6,500' },
+      total_rate: { lowest: '₹19,500' },
+    },
+    {
+      name: 'Mountain Haven',
+      images: [{ thumbnail: 'https://images.unsplash.com/photo-1482192505345-5655af888cc4?q=80&w=1600&auto=format&fit=crop' }],
+      description: 'A serene alpine lodge with crisp air, scenic trails, and cozy fireplaces.',
+      hotel_class: 'Boutique',
+      rate_per_night: { lowest: '₹5,200' },
+      total_rate: { lowest: '₹15,600' },
+    },
+    {
+      name: 'City Lights Hotel',
+      images: [{ thumbnail: 'https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1600&auto=format&fit=crop' }],
+      description: 'Modern comfort in the heart of the city with skyline views and gourmet dining.',
+      hotel_class: 'Business',
+      rate_per_night: { lowest: '₹7,200' },
+      total_rate: { lowest: '₹21,600' },
+    },
+  ];
 
   const handleBookNow = (hotel: any) => {
     if (!user) {
@@ -37,7 +58,7 @@ export default function HomePage() {
     setSelectedHotel(null);
   };
 
-  const hotels = data?.properties?.slice(0, 6) || []; // Show only first 6 hotels
+  // const hotels = data?.properties?.slice(0, 6) || []; // from API
 
   // GSAP entrance animations
   useEffect(() => {
@@ -135,24 +156,11 @@ export default function HomePage() {
             Featured Hotels
           </h2>
           
-          {isLoading && (
-            <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-              <p className="mt-4 text-gray-600">Loading amazing hotels...</p>
-            </div>
-          )}
-
-          {error && (
-            <div className="text-center py-12">
-              <p className="text-red-600">Failed to load hotels. Please try again later.</p>
-            </div>
-          )}
-
-          {!isLoading && !error && (
+          {
             <>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {hotels.map((hotel: any, idx: number) => (
-                  <div key={hotel.property_token || idx} className="rounded-lg border bg-white shadow-sm hover:shadow-lg transition-shadow duration-300">
+                  <div key={idx} className="rounded-lg border bg-white shadow-sm hover:shadow-lg transition-shadow duration-300">
                     {hotel.images && hotel.images[0] && (
                       <img
                         src={hotel.images[0].thumbnail}
@@ -253,7 +261,7 @@ export default function HomePage() {
                 </a>
               </div>
             </>
-          )}
+          }
         </div>
       </section>
 
